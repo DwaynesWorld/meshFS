@@ -27,14 +27,14 @@ async fn main() {
 mod routes {
     use super::handlers;
     use sled::Db;
-    use warp::Filter;
+    use warp::{Filter, Rejection, Reply};
 
-    pub fn all(db: Db) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    pub fn all(db: Db) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         get(db.clone()).or(put(db.clone())).or(delete(db.clone()))
     }
 
     /// GET /:key
-    pub fn get(db: Db) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    pub fn get(db: Db) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::get()
             .and(warp::path::param())
             .and(with_db(db))
@@ -42,7 +42,7 @@ mod routes {
     }
 
     /// PUT /:key with body
-    pub fn put(db: Db) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    pub fn put(db: Db) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::put()
             .and(warp::path::param())
             .and(warp::body::aggregate())
@@ -51,9 +51,7 @@ mod routes {
     }
 
     /// DELETE /:key
-    pub fn delete(
-        db: Db,
-    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    pub fn delete(db: Db) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::delete()
             .and(warp::path::param())
             .and(with_db(db))
@@ -68,9 +66,9 @@ mod routes {
 mod handlers {
     use sled::Db;
     use std::convert::Infallible;
-    use warp::{http::Response, http::StatusCode, Buf};
+    use warp::{http::Response, http::StatusCode, Buf, Reply};
 
-    pub async fn get(key: String, db: Db) -> Result<impl warp::Reply, Infallible> {
+    pub async fn get(key: String, db: Db) -> Result<impl Reply, Infallible> {
         log::debug!("get data for key: {}", key);
 
         let data = db.get(key).unwrap().unwrap();
@@ -83,14 +81,17 @@ mod handlers {
         Ok(response)
     }
 
-    pub async fn put(key: String, data: impl Buf, db: Db) -> Result<impl warp::Reply, Infallible> {
+    pub async fn put(key: String, mut data: impl Buf, db: Db) -> Result<impl Reply, Infallible> {
         log::debug!("put data: {} {:?}", key, data.chunk());
+
+        let bytes = data.copy_to_bytes(data.remaining());
+        let meta_key = md5::compute(bytes);
 
         db.insert(key, data.chunk()).unwrap();
         Ok(StatusCode::CREATED)
     }
 
-    pub async fn delete(key: String, db: Db) -> Result<impl warp::Reply, Infallible> {
+    pub async fn delete(key: String, db: Db) -> Result<impl Reply, Infallible> {
         log::debug!("delete data: {}", key);
 
         db.remove(key).unwrap();
