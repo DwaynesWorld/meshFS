@@ -68,34 +68,32 @@ mod routes {
 mod handlers {
     use sled::Db;
     use std::convert::Infallible;
-    use warp::http::StatusCode;
-    use warp::Buf;
+    use warp::{http::Response, http::StatusCode, Buf};
 
     pub async fn get(key: String, db: Db) -> Result<impl warp::Reply, Infallible> {
         log::debug!("get data for key: {}", key);
 
         let data = db.get(key).unwrap().unwrap();
-        let s = std::str::from_utf8(&data);
-        Ok(StatusCode::OK)
+        let s = std::str::from_utf8(&data).unwrap();
+
+        let response = Response::builder()
+            .status(StatusCode::OK)
+            .body(String::from(s));
+
+        Ok(response)
     }
 
     pub async fn put(key: String, data: impl Buf, db: Db) -> Result<impl warp::Reply, Infallible> {
-        log::debug!("put data: {} {}", key, data.remaining());
-        println!(
-            "put data: {} {}",
-            key,
-            std::str::from_utf8(data.chunk()).unwrap()
-        );
+        log::debug!("put data: {} {:?}", key, data.chunk());
 
         db.insert(key, data.chunk()).unwrap();
-        Ok(StatusCode::OK)
+        Ok(StatusCode::CREATED)
     }
 
     pub async fn delete(key: String, db: Db) -> Result<impl warp::Reply, Infallible> {
         log::debug!("delete data: {}", key);
-        println!("delete data: {}", key);
 
         db.remove(key).unwrap();
-        Ok(StatusCode::OK)
+        Ok(StatusCode::NO_CONTENT)
     }
 }
