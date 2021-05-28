@@ -40,7 +40,7 @@ mod router {
     pub fn routes(db: Arc<Db>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         get_blobs(db.clone())
             .or(get_blob(db.clone()))
-            .or(put_blob(db.clone()))
+            .or(create_blob(db.clone()))
             .or(delete_blob(db.clone()))
     }
 
@@ -66,14 +66,14 @@ mod router {
     }
 
     /// PUT v1/blobs/:key with body
-    fn put_blob(db: Arc<Db>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    fn create_blob(db: Arc<Db>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::put()
             .and(warp::path("v1"))
             .and(warp::path("blobs"))
             .and(warp::path::param())
             .and(warp::body::aggregate())
             .and(with_db(db))
-            .and_then(handlers::put_blob)
+            .and_then(handlers::create_blob)
     }
 
     /// DELETE v1/blobs/:key
@@ -121,7 +121,7 @@ mod handlers {
         Ok(response)
     }
 
-    pub async fn put_blob(
+    pub async fn create_blob(
         key: String,
         mut blob: impl Buf,
         db: Arc<Db>,
