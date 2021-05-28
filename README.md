@@ -21,6 +21,9 @@ curl -v -L -X PUT -d bar localhost:3000/v1/blobs/foo
 # get key "foo" (should be "bar")
 curl -v -L localhost:3000/v1/blobs/foo
 
+# get key values
+curl -v -L localhost:3000/v1/blobs
+
 # delete key "test_key"
 curl -v -L -X DELETE localhost:3000/v1/blobs/test_key
 

@@ -100,9 +100,10 @@ mod handlers {
     pub async fn get_blobs(db: Arc<Db>) -> Result<impl Reply, Infallible> {
         log::debug!("get list of for key");
 
-        // let pairs: FromIterator<Result<(sled::IVec, sled::IVec), sled::Error>> =
-        // db.into_iter().skip(5).take(5).collect();
-        // println!("pairs {:?}", pairs);
+        db.iter().for_each(|r| {
+            let (k, v) = r.unwrap();
+            println!("k {:?} - v {:?}", k, v);
+        });
 
         Ok(StatusCode::OK)
     }
