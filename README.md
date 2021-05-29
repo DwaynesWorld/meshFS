@@ -1,16 +1,23 @@
 ### API
 
-- GET /key
+- GET v1/blobs
 
-  - 302 redirect to volume server.
+  - 200: list blobs.
 
-- PUT /key
+- GET v1/blobs/key
 
-  - 201 = written
+  - 302: redirect to volume server.
+  - 404: key not found
 
-- DELETE /key
+- PUT v1/blobs/key
 
-  - 204 = deleted
+  - 201: written
+  - 404: key not found
+
+- DELETE v1/blobs/key
+
+  - 204: deleted
+  - 404: key not found
 
 ### Usage
 

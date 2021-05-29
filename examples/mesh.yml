@@ -1,9 +1,10 @@
 host: 127.0.0.1
 port: "3000"
 meta_database:
-  path: "/tmp/meshfs"
+  path: "/tmp/mesh-server"
 volumes:
   - localhost:3001
   - localhost:3002
   - localhost:3003
   - localhost:3004
+replication: 2

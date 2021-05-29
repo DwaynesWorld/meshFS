@@ -1,0 +1,5 @@
+name: "mesh::volume::3"
+host: 127.0.0.1
+port: "3003"
+location:
+  path: "/tmp/mesh-volume-3"

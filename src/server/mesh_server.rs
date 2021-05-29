@@ -1,10 +1,10 @@
-use crate::server::mesh_server_options::MeshServerOptions;
-
 use sled::Db;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::sync::Arc;
 use warp::Filter;
+
+use super::mesh_server_options::MeshServerOptions;
 
 pub struct MeshServer {
     options: MeshServerOptions,
@@ -98,8 +98,6 @@ mod handlers {
     use warp::{http::Response, http::StatusCode, Buf, Reply};
 
     pub async fn get_blobs(db: Arc<Db>) -> Result<impl Reply, Infallible> {
-        log::debug!("get list of for key");
-
         db.iter().for_each(|r| {
             let (k, v) = r.unwrap();
             println!("k {:?} - v {:?}", k, v);
@@ -109,11 +107,10 @@ mod handlers {
     }
 
     pub async fn get_blob(key: String, db: Arc<Db>) -> Result<impl Reply, Infallible> {
-        log::debug!("get data for key: {}", key);
-
         let blob = db.get(key).unwrap().unwrap();
         let s = std::str::from_utf8(&blob).unwrap();
 
+        //TODO: Match on blob option and return not found
         let response = Response::builder()
             .status(StatusCode::OK)
             .body(String::from(s));
@@ -126,8 +123,6 @@ mod handlers {
         mut blob: impl Buf,
         db: Arc<Db>,
     ) -> Result<impl Reply, Infallible> {
-        // log::debug!("put blob: {} {:?}", key, blob.chunk());
-
         let bytes = blob.copy_to_bytes(blob.remaining());
         let meta_key = md5::compute(&bytes);
         println!("{:x}", meta_key);
@@ -137,8 +132,6 @@ mod handlers {
     }
 
     pub async fn delete_blob(key: String, db: Arc<Db>) -> Result<impl Reply, Infallible> {
-        log::debug!("delete blob: {}", key);
-
         db.remove(key).unwrap();
         Ok(StatusCode::NO_CONTENT)
     }

@@ -1,8 +1,7 @@
+mod command;
 mod server;
 
-use crate::server::mesh_server::MeshServer;
-use crate::server::mesh_server_options::MeshServerOptions;
-use std::env;
+use clap::{App, Arg, SubCommand};
 
 /// Provides a RESTful web server for managing a distributed file system.
 ///
@@ -14,27 +13,41 @@ use std::env;
 /// - `DELETE v1/blobs/<key>`: delete blob from storage.
 #[tokio::main]
 async fn main() {
-    init_logging();
+    let opts = App::new("MeshFS")
+        .version("1.0")
+        .author("Kyle T. <kthompson713@gmail.com>")
+        .about("Does awesome things")
+        .subcommand(
+            SubCommand::with_name("server").arg(
+                Arg::with_name("config")
+                    .short("c")
+                    .long("config")
+                    .value_name("FILE")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Sets a custom config file"),
+            ),
+        )
+        .subcommand(
+            SubCommand::with_name("volume").arg(
+                Arg::with_name("config")
+                    .short("c")
+                    .long("config")
+                    .value_name("FILE")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Sets a custom config file"),
+            ),
+        )
+        .get_matches();
 
-    let options = MeshServerOptions::new().unwrap_or_else(|err| {
-        eprintln!("Error parsing configuration file: {}", err);
-        std::process::exit(1);
-    });
-
-    let mesh_server: MeshServer = MeshServer::new(options).unwrap_or_else(|err| {
-        eprintln!("Error creating mesh server: {}", err);
-        std::process::exit(1);
-    });
-
-    mesh_server.start().await;
-}
-
-fn init_logging() {
-    if env::var_os("RUST_LOG").is_none() {
-        // Set `RUST_LOG=mesh::server=debug` to see debug logs,
-        // this only shows access logs.
-        env::set_var("RUST_LOG", "mesh::server=debug");
+    if let Some(opts) = opts.subcommand_matches("server") {
+        let config_path = opts.value_of("config").unwrap();
+        command::server::start_mesh_server(config_path).await;
     }
 
-    pretty_env_logger::init();
+    if let Some(opts) = opts.subcommand_matches("volume") {
+        let config_path = opts.value_of("config").unwrap();
+        command::volume::start_volume_server(config_path).await;
+    }
 }
