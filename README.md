@@ -44,4 +44,5 @@ curl -v -L -o README-1.md localhost:3000/v1/blobs/fizz
 
 # delete key "fizz"
 curl -v -L -X DELETE localhost:3000/v1/blobs/fizz
+curl -vvv -L -X DELETE "localhost:3000/v1/blobs/fizz?soft=true"
 ```

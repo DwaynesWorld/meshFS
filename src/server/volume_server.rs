@@ -3,6 +3,10 @@ use warp::Filter;
 
 use super::volume_server_options::VolumeServerOptions;
 
+fn string_to_static_str(s: String) -> &'static str {
+    Box::leak(s.into_boxed_str())
+}
+
 pub struct VolumeServer {
     pub options: VolumeServerOptions,
 }
@@ -13,7 +17,8 @@ impl VolumeServer {
     }
 
     pub async fn start(&self) {
-        let routes = router::routes().with(warp::log("mesh::volume"));
+        let logger = warp::log(string_to_static_str(self.options.name.to_owned()));
+        let routes = router::routes().with(logger);
         let addr = Ipv4Addr::from_str(self.options.host.as_str()).unwrap();
         let socket_addr = (addr, self.options.port);
         warp::serve(routes).run(socket_addr).await

@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug",
       "program": "${workspaceFolder}/target/debug/mesh-fs",
-      "args": [],
+      "args": ["server", "-c", "examples/mesh.yml"],
       "env": {},
       "cwd": "${workspaceFolder}"
     }
