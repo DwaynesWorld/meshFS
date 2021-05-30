@@ -24,7 +24,7 @@ fn get_blobs(
     warp::path!("v1" / "blobs")
         .and(warp::path::end())
         .and(warp::get())
-        .and(warp::query::<ListOptions>())
+        .and(warp::query::<ListQueryOptions>())
         .and(with_options(opts))
         .and(with_properties(props))
         .and_then(handlers::get_blobs)
@@ -62,7 +62,7 @@ fn delete_blob(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("v1" / "blobs" / String)
         .and(warp::delete())
-        .and(warp::query::<DeleteOptions>())
+        .and(warp::query::<DeleteQueryOptions>())
         .and(with_options(opts))
         .and(with_properties(props))
         .and_then(handlers::delete_blob)

@@ -1,12 +1,12 @@
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-pub struct ListOptions {
+pub struct ListQueryOptions {
     pub offset: Option<usize>,
     pub limit: Option<usize>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DeleteOptions {
+pub struct DeleteQueryOptions {
     pub soft: Option<bool>,
 }

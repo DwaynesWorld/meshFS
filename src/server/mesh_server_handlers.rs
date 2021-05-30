@@ -1,4 +1,4 @@
-use crate::server::mesh_server_models::{DeleteOptions, ListOptions};
+use crate::server::mesh_server_models::{DeleteQueryOptions, ListQueryOptions};
 use crate::server::mesh_server_options::MeshServerOptions;
 use crate::server::mesh_server_properties::MeshServerProperties;
 use crate::storage::blob_properties::BlobProperties;
@@ -9,15 +9,15 @@ use warp::hyper::Body;
 use warp::{http::Response, http::StatusCode, Buf, Reply};
 
 pub async fn get_blobs(
-    list_opts: ListOptions,
+    query_opts: ListQueryOptions,
     opts: Arc<MeshServerOptions>,
     props: Arc<MeshServerProperties>,
 ) -> Result<impl Reply, Infallible> {
     props
         .db
         .iter()
-        .skip(list_opts.offset.unwrap_or(0))
-        .take(list_opts.limit.unwrap_or(2))
+        .skip(query_opts.offset.unwrap_or(0))
+        .take(query_opts.limit.unwrap_or(2))
         .for_each(|r| {
             let (k, v) = r.unwrap();
             println!("k {:?} - v {:?}", k, v);
@@ -113,12 +113,12 @@ pub async fn create_blob(
 
 pub async fn delete_blob(
     key: String,
-    delete_opts: DeleteOptions,
-    opts: Arc<MeshServerOptions>,
+    query_opts: DeleteQueryOptions,
+    server_opts: Arc<MeshServerOptions>,
     props: Arc<MeshServerProperties>,
 ) -> Result<impl Reply, Infallible> {
-    println!("debug deleting: {} - {:?}", key, delete_opts);
-    if delete_opts.soft.unwrap_or(false) {
+    println!("debug deleting: {} - {:?}", key, query_opts);
+    if query_opts.soft.unwrap_or(false) {
         println!("soft deleting: {}", key);
     }
 
